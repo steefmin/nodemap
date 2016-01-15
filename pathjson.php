@@ -1,5 +1,5 @@
 <?php
-$pathfindtreefile = shell_exec('nodejs ~/cjdns/tools/pathfinderTree');
+$pathfindtreefile = shell_exec('nodejs /path/to/cjdns/tools/pathfinderTree');
 $jsonfile = file_get_contents('results.json');
 $oldjson = json_decode($jsonfile,true);
 $rows = explode("\n", $pathfindtreefile);
