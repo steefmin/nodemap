@@ -26,7 +26,7 @@ function main () {
                 //console.log(node.data);
                 var ui = Viva.Graph.svg('g');
                 var text = Viva.Graph.svg('text').text(node.data.name);
-                var rect = Viva.Graph.svg('circle').attr("r",4).attr("fill",node.data.color).attr("id$
+                var rect = Viva.Graph.svg('circle').attr("r",4).attr("fill",node.data.color).attr("id",node.id);
                 ui.append(text);
                 ui.append(rect);
                 $(ui).hover(function(){
@@ -69,15 +69,15 @@ function main () {
 function getjson(graph) {
         $.getJSON('results.json', function(json) {
                 console.log("Nodes: "+json.nodes.length);
-                graph.addNode(json.nodes[0].addr,{name:json.nodes[0].name, color:'#ff0000', defaultco$
+                graph.addNode(json.nodes[0].addr,{name:json.nodes[0].name, color:'#ff0000', defaultcolor: "#ff0000"});
                 for(var i=1; i < json.nodes.length; i++){
-                        graph.addNode(json.nodes[i].addr,{name:json.nodes[i].name, color:'#0000ff', d$
+                        graph.addNode(json.nodes[i].addr,{name:json.nodes[i].name, color:'#0000ff', defaultcolor: "#0000ff"});
                 }
                 console.log("Edges: "+json.edges.length);
                 for(var i=1; i < json.edges.length; i++){
                         graph.addLink(json.edges[i].addr,json.edges[i].parent);
                 }
-                $("#jsonstats").html("Nodes: "+json.nodes.length+"<br>Edges: "+json.edges.length+"<br$
+                $("#jsonstats").html("Nodes: "+json.nodes.length+"<br>Edges: "+json.edges.length+"<br><a href='http://www.github.com/steefmin/nodemap'>source</a>");
         });
 }
 function nodeinfoform(nodeid){
