@@ -1,10 +1,7 @@
 <?php
-$path = "/path/to/cjdns/tools/pathfinderTree";
+$path = "/path/to/cjdns/tools/pathFinderTree";
 $pathfindtreefile = shell_exec('nodejs '.$path);
-$jsonfile = file_get_contents('results.json');
-$oldjson = json_decode($jsonfile,true);
-$rows = explode("\n", $pathfindtreefile);
-array_pop($rows);
+
 foreach($rows as $nodenumber => $data){
         $node_data[$nodenumber] = explode(' ', $data); //split at each space
         $hops=strpos($data,"fc")/2;
@@ -34,12 +31,8 @@ foreach($rows as $nodenumber => $data){
         $temp[$nodenumber]=array("addr"=>$addr,"name"=>$name,"label"=>$label,"hops"=>$hops);
         $nodes[$nodenumber]=array("addr"=>$addr,"name"=>$name);
 }
-$edges=array_values(array_merge($oldjson['edges'],$edges));
-$nodes=array_values(array_merge($oldjson['nodes'],$nodes));
-$edges=array_values(array_map("unserialize",array_unique(array_map("serialize",$edges))));
-$nodes=array_values(array_map("unserialize",array_unique(array_map("serialize",$nodes))));
 $json=array("nodes"=>$nodes,"edges"=>$edges);
-$fp = fopen('results.json', 'w');
+$fp = fopen('results-links.json', 'w');
 fwrite($fp, json_encode($json));
 fclose($fp);
 ?>
