@@ -1,4 +1,5 @@
 <?php
+include 'env.php';
 $jsonfile = file_get_contents('results-links.json');
 $oldjson = json_decode($jsonfile,true);
 if($oldjson == []){
@@ -9,10 +10,10 @@ $status ="good";
 $number=1;
 $nametemp = explode(":",$ip);
 $nodes[0]=array("addr"=>$ip,"name"=>$nametemp[7]);
-while($ip != "myip"){
+while($ip != $myip6){
         $text = '"'.$ip.'"';
         $text = "'NodeStore_nodeForAddr(".$text.")'";
-        $output = shell_exec("nodejs /cjdns/tools/cexec ".$text);
+        $output = shell_exec("nodejs ".$cjdnspath."/tools/cexec ".$text);
         $output = json_decode($output,true);
         if($output['result']==[]){
                 print_r("ip lookup failed");
