@@ -4,9 +4,10 @@ $CJDNSDIR = "/home/cjdns/cjdns";
 
 function dumpPeers($node){
         global $CJDNSDIR;
-        $string = "RouterModule_getPeers('".$node."',30000,undefined)";
+        $string = "RouterModule_getPeers('".$node."',30000,undefined)"
         $output = shell_exec('nodejs '.$CJDNSDIR.'/tools/cexec "'.$string.'"');
-//      $output = shell_exec('python '.$CJDNSDIR.'/contrib/python/cexec "'.$string.'"');
+//      $string = "RouterModule_getPeers('".$node."',0,0)"
+//      $output = shell_exec($CJDNSDIR.'/contrib/python/cexec "'.$string.'"');
         if(preg_match("~peers~",$output)==1){ //if peers is found in output
                 $output = json_decode($output,true);
                 return $output['peers'];
@@ -44,7 +45,7 @@ function splice($gohere,$viahere){
         $output = str_replace("\n", "" ,$output);
         return $output;
 }
-$teller = 0;
+
 $nodes = [];
 $mynode = "0000.0000.0000.0001";
 $list = dumpPeers($mynode); //initialize list
@@ -84,11 +85,6 @@ while(count($list)>0){
         $list = array_unique($list);
         // array_shift $list
         array_shift($list);
-        //testcode
-        if($teller > 10000){
-                break;
-        }
-        $teller = $teller +1;
 }
 print_r($nodes);
 print_r("Total nodes: ".count($nodes));
