@@ -2,7 +2,8 @@
 
 $CJDNSDIR = "/home/cjdns/cjdns";
 
-function dumpPeers($CJDNSDIR,$node){
+function dumpPeers($node){
+        global $CJDNSDIR;
         $string = "RouterModule_getPeers('".$node."',30000,undefined)";
         $output = shell_exec('nodejs '.$CJDNSDIR.'/tools/cexec "'.$string.'"');
 //      $output = shell_exec('python '.$CJDNSDIR.'/contrib/python/cexec "'.$string.'"');
@@ -14,7 +15,8 @@ function dumpPeers($CJDNSDIR,$node){
         }
 }
 function pktoip6($key){
-        $output = shell_exec('python /home/cjdns/cjdns/contrib/python/pktoip6 '.$key);
+        global $CJDNSDIR;
+        $output = shell_exec('python '.$CJDNSDIR.'/contrib/python/pktoip6 '.$key);
         $output = explode(" ---> ",$output);
         $addr = $output[1];
         return $addr;
@@ -36,7 +38,8 @@ function storeNode($nodes,$key,$peerkeys){
         $nodes[$key] = $peers;
         return $nodes;
 }
-function splice($CJDNSDIR,$gohere,$viahere){
+function splice($gohere,$viahere){
+        global $CJDNSDIR;
         $output = shell_exec('nodejs '.$CJDNSDIR.'/tools/splice '.$gohere.' '.$viahere);
         $output = str_replace("\n", "" ,$output);
         return $output;
@@ -44,7 +47,7 @@ function splice($CJDNSDIR,$gohere,$viahere){
 $teller = 0;
 $nodes = [];
 $mynode = "0000.0000.0000.0001";
-$list = dumpPeers($CJDNSDIR,$mynode); //initialize list
+$list = dumpPeers($mynode); //initialize list
 print_r($list);
 while(count($list)>0){
         // als node al via een andere path is bereikt, doe skip
@@ -59,7 +62,7 @@ while(count($list)>0){
         print_r("Now doing: ".$key."\n");
         print_r("Nodes scanned: ".count($nodes)." | Nodes todo: ".count($list)."\n");
         // dumppeers van node bovenaan $list
-        $peerkeys = dumpPeers($CJDNSDIR,$list[0]);
+        $peerkeys = dumpPeers($list[0]);
         // sla op: node[key] = addr , name , peerlijst
         $nodes = storeNode($nodes, $key, $peerkeys);
         // kijk of peer al gedaan is, zo ja -> niet opslaan in list
@@ -73,7 +76,7 @@ while(count($list)>0){
                 $test = explode(".",$peer);
                 $destination = $test[1].".".$test[2].".".$test[3].".".$test[4];
                 if(!isset($nodes[$test[5]."k"])){
-                        $newpath = splice($CJDNSDIR,$destination,$path);
+                        $newpath = splice($destination,$path);
                         $list[] = $test[0].".".$newpath.".".$test[5].".k";
                 }
         }
@@ -88,7 +91,7 @@ while(count($list)>0){
         $teller = $teller +1;
 }
 print_r($nodes);
-
+print_r("Total nodes: ".count($nodes));
 $fp = fopen('/media/usb/www/html/cjdns/nodes.json', 'w');
 fwrite($fp, json_encode($nodes));
 fclose($fp);
