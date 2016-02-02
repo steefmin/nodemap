@@ -22,11 +22,13 @@ function pktoip6($key){
 
 function storeNode($nodes,$key,$peerkeys){
         $peers = [];
-        foreach($peerkeys as $peer){
-                $temp = explode(".",$peer);
-                $peers[] = $temp[5].".k";
+        if($peerkeys!=0){
+                foreach($peerkeys as $peer){
+                        $temp = explode(".",$peer);
+                        $peers[] = $temp[5].".k";
+                }
+                array_shift($peers);
         }
-        array_shift($peers);
 //      $addr = pktoip6($key);
 //      $nametemp = explode(":",$addr);
 //      $name = $nametemp[7];
