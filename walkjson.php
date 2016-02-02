@@ -7,7 +7,7 @@ function dumpPeers($node){
         $string = "RouterModule_getPeers('".$node."',30000,undefined)"
         $output = shell_exec('nodejs '.$CJDNSDIR.'/tools/cexec "'.$string.'"');
 //      $string = "RouterModule_getPeers('".$node."',0,0)"
-//      $output = shell_exec($CJDNSDIR.'/contrib/python/cexec "'.$string.'"');
+//      $output = shell_exec('.'.$CJDNSDIR.'/contrib/python/cexec "'.$string.'"');
         if(preg_match("~peers~",$output)==1){ //if peers is found in output
                 $output = json_decode($output,true);
                 return $output['peers'];
