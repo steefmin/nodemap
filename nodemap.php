@@ -1,14 +1,12 @@
 <html>
-<?php
-$ip = $_SERVER['REMOTE_ADDR'];
-include 'linksjson.php?ip='.$ip //generate new json file
-?>
 <head>
 <link rel="shortcut icon" href="/favicon.ico"></link>
 <script src="../jquery-2.2.0.min.js"></script>
-<script type="text/javascript" src="../VivaGraphJS/dist/vivagraph.js"></script>
+<script src="../VivaGraphJS/dist/vivagraph.min.js"></script>
 <script type="text/javascript">
+
 function main () {
+
         var graph = Viva.Graph.graph();
 
         getjson(graph); //add the nodes and links
@@ -63,37 +61,63 @@ function main () {
         });
 
         var layout = Viva.Graph.Layout.forceDirected(graph, {
-                springLength : 100,     //180
+                springLength : 180,     //180
                 springCoeff : 0.0002,   //0.0002
                 dragCoeff : 0.03,       //0.03
-                gravity : -3.2          //-1.2
+                gravity : -1.2          //-1.2
         });
-        var renderer = Viva.Graph.View.renderer(graph,{graphics:graphics,layout:layout});
+
+        var renderer = Viva.Graph.View.renderer(graph,{
+                graphics:graphics,
+                layout:layout
+        });
         renderer.run();
 
         $("#title").click(function(){
                 $("#infoform").html("");
         });
+
+
 }
 function getjson(graph) {
-        $.getJSON('results-links.json', function(json) {
-                console.log("nodes: "+json.nodes.length);
-                graph.addNode(json.nodes[0].addr,{name:json.nodes[0].name, color:'#ff0000', defaultcolor:'#ff0000'});
-                for(var i=1; i < json.nodes.length; i++){
-                        graph.addNode(json.nodes[i].addr,{name:json.nodes[i].name, color:'#0000ff', defaultcolor:'#0000ff'});
+        $.getJSON('nodes.json', function(json) {
+                var nodesteller = 0;
+                var edgesteller = 0;
+                for(var key in json){
+                        if(json.hasOwnProperty(key)){
+                                if(key == "9qyqxqkzyvmvxpfy49mn0g45scn8mlmhc1vwx138f55p284tt5k0.k"){
+                                graph.addNode(key.slice(0,52),{name: json[key].name,addr: json[key].addr ,color:'#ff0000', isPinned: true});
+                                }else{
+                                graph.addNode(key.slice(0,52),{name: json[key].name,addr: json[key].addr ,color:'#0000ff'});
+                                }
+                        }
+                nodesteller++;
                 }
-                console.log("edges: "+json.edges.length);
-                for(var i=0; i < json.edges.length; i++){
-                        graph.addLink(json.edges[i].addr,json.edges[i].parent);
+                for(var key in json){
+                        for(var n=0; n<json[key].peers.length; n++){
+                                var alreadyLinked = 0;
+                                graph.forEachLinkedNode(json[key].peers[n].slice(0,52),function(linkedNode, link){
+                                        if(linkedNode.id == key.slice(0,52)){
+                                                alreadyLinked = 1;
+                                        }
+                                });
+                                if(alreadyLinked==0){
+                                        graph.addLink(key.slice(0,52),json[key].peers[n].slice(0,52));
+                                        edgesteller++;
+                                }
+                        }
                 }
-                $("#jsonstats").html("nodes: "+json.nodes.length+"<br>edges: "+json.edges.length+"<br><a href='http://www.github.com/steefmin/nodemap'>source</a>");
+
+                $("#jsonstats").html("nodes: "+nodesteller+"<br>edges: "+edgesteller+"<br><a href='http://www.github.com/steefmin/nodemap'>source</a>");
         });
+
 }
 function nodeinfoform(graph,nodeid){
         var linkednodes = connectednodes(graph,nodeid);
+        var nodeinfo = graph.getNode(nodeid);
         var htmltext =  ""+
                         "<div style='font-family: monospace;'>"+
-                        "<a href='http://["+nodeid+"]' target='_blank'>"+nodeid+"</a>"+
+                        "<a href='http://["+nodeinfo.data.addr+"]' target='_blank'>"+nodeinfo.data.addr+"</a>"+
                         "</div>"+
                         "<br>"+
                         "<a href='http://fc00.org#"+nodeid+"'>fc00.org</a>"+
@@ -106,7 +130,8 @@ function connectednodes(graph,nodeid){
         var linkednodes="";
         var numberofnodes=0;
         graph.forEachLinkedNode(nodeid, function(linkednode,link){
-                linkednodes = linkednodes+linkednode.id+"<br>";
+                var nodeinfo = graph.getNode(linkednode.id);
+                linkednodes = linkednodes+nodeinfo.data.addr+"<br>";
                 numberofnodes++
         });
         var totaltext = "Peers: "+
@@ -169,16 +194,12 @@ div#jsonstats{
         <div id="original" style="text-align:justify;">
 <p>
 All the nodes visible from my node, 90d6 in red.
-Nodes are added every fifteen minutes.
 Click nodes for more information about it.
 Give the graph a minute to stabilize. I'm crunching numbers on the physics to improve this.
 </p><p>
-This can be considered as version 2 of nodemap. The first itteration used the pathfindertree tool,
-but the validity of a lot of links were questionable. So I looked further for a more reliable
-method to find paths. Now a recursive script is used that step by step analyses that path to nodes.
-It will fail a bit more often, but I'm more sure of the validity of this method. This map will
-need some time to grow as large as the previous version. I've given it a list of nodes to parse to
-start off. Visits to this site are also included into the graph.
+Version 3 already.
+With a new crawler that this time itteratively asks peers for their peers.
+No more lists of adresses to search for, or scanning randomly for existing nodes.
 </p><p>
 Next step is to time-code the links and scrub the list of old links that are not relevant anymore.
 This should keep the map up-to-date on the actual situation.
